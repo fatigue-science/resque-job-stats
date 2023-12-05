@@ -18,6 +18,10 @@ module Resque
           "stats:jobs:#{self.name}:duration"
         end
 
+        around_perform do |job, block|
+          around_perform_job_stats_duration(job.arguments) { block.call }
+        end
+
         # Increments the failed count when job is complete
         def around_perform_job_stats_duration(*args)
           start = Time.now

@@ -26,13 +26,6 @@ module Resque
 
         if base.ancestors.map(&:to_s).include?("ActiveJob::Base")
           # ActiveJob does not magically call all of our after_perform_ABC methods like resque does
-          base.around_perform do |job|
-            job.class.methods.select do |meth|
-              meth.to_s.start_with?("around_perform_")
-            end.each do |meth|
-              job.class.send(meth)
-            end
-          end
 
           base.after_perform do |job|
             job.class.methods.select do |meth|

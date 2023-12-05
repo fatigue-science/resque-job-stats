@@ -13,6 +13,10 @@ module Resque
           "stats:jobs:#{self.name}:history"
         end
 
+        around_perform do |job, block|
+          around_perform_job_stats_history(job.arguments) { block.call }
+        end
+
         def around_perform_job_stats_history(*args)
           # we collect our own duration and start time rather
           # than correlate with the duration stat to make sure
