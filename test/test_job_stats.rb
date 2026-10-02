@@ -56,6 +56,15 @@ class CountingJob < ActiveJob::Base
   end
 end
 
+class FailingActiveJob < ActiveJob::Base
+  include Resque::Plugins::JobStats
+  queue_as :test
+
+  def perform
+    raise 'fail'
+  end
+end
+
 class TestResqueJobStats < MiniTest::Unit::TestCase
 
   def setup
@@ -163,7 +172,7 @@ class TestResqueJobStats < MiniTest::Unit::TestCase
   end
 
   def test_measured_jobs
-    assert_equal [SimpleJob, InstanceMethodJob, CountingJob], Resque::Plugins::JobStats.measured_jobs
+    assert_equal [SimpleJob, InstanceMethodJob, CountingJob, FailingActiveJob], Resque::Plugins::JobStats.measured_jobs
   end
 
   def test_history
@@ -243,5 +252,17 @@ class TestResqueJobStats < MiniTest::Unit::TestCase
     assert_equal 1, CountingJob.runs
     assert_equal 1, CountingJob.job_durations.count
     assert_equal 1, CountingJob.job_histories.count
+  end
+
+  def test_instance_method_jobs_failed
+    FailingActiveJob.jobs_failed = 0
+    FailingActiveJob.reset_job_histories
+    2.times do
+      assert_raises(RuntimeError) { FailingActiveJob.perform_now }
+    end
+    assert_equal 2, FailingActiveJob.jobs_failed
+    assert_equal 0, FailingActiveJob.jobs_performed
+    assert_equal 2, FailingActiveJob.job_histories.count
+    assert ! FailingActiveJob.job_histories.first["success"]
   end
 end

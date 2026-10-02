@@ -31,10 +31,19 @@ module Resque
             hooks = job.class.methods.select do |meth|
               meth.to_s.start_with?("around_perform_")
             end
-            # nest the hooks so the job body only runs once
-            hooks.reverse.inject(block) do |inner, meth|
-              -> { job.class.send(meth) { inner.call } }
-            end.call
+            begin
+              # nest the hooks so the job body only runs once
+              hooks.reverse.inject(block) do |inner, meth|
+                -> { job.class.send(meth) { inner.call } }
+              end.call
+            rescue => e
+              job.class.methods.select do |meth|
+                meth.to_s.start_with?("on_failure_")
+              end.each do |meth|
+                job.class.send(meth, e)
+              end
+              raise
+            end
           end
 
           base.after_perform do |job|
