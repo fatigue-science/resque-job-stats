@@ -2,6 +2,9 @@
 
 ## Master
 
+## 0.7.2
+- Count failures for ActiveJob jobs by calling `on_failure_*` hooks
+
 ## 0.7.1
 - Fix ActiveJob jobs running once per `around_perform_*` hook
 
