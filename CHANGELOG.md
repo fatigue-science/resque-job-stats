@@ -2,6 +2,12 @@
 
 ## Master
 
+## 0.7.0
+- Support usage of Resque version 3
+
+## 0.6.0
+- Fix around-perform calls
+
 ## 0.5.0
 
 * Add example app (#27, 158f466)

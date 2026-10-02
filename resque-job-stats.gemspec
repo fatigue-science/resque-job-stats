@@ -24,11 +24,11 @@ Gem::Specification.new do |s|
 
   s.homepage = "http://github.com/alanpeabody/resque-job-stats"
   s.licenses = ["MIT"]
-  s.required_ruby_version = ">= 2.2"
+  s.required_ruby_version = ">= 3.2"
   
   s.summary = "Job-centric stats for Resque"
 
-  s.add_dependency('resque', '>= 1.17', '< 3')
+  s.add_dependency('resque', '>= 1.17', '< 4')
 
   s.add_development_dependency "rake"
   s.add_development_dependency "minitest", '~> 5.0'
