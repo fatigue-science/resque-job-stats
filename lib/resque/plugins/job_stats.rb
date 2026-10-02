@@ -28,11 +28,13 @@ module Resque
           # ActiveJob does not magically call all of our after_perform_ABC methods like resque does
 
           base.around_perform do |job, block|
-            job.class.methods.select do |meth|
+            hooks = job.class.methods.select do |meth|
               meth.to_s.start_with?("around_perform_")
-            end.each do |meth|
-              job.class.send(meth) { block.call }
             end
+            # nest the hooks so the job body only runs once
+            hooks.reverse.inject(block) do |inner, meth|
+              -> { job.class.send(meth) { inner.call } }
+            end.call
           end
 
           base.after_perform do |job|

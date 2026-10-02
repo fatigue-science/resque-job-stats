@@ -2,6 +2,9 @@
 
 ## Master
 
+## 0.7.1
+- Fix ActiveJob jobs running once per `around_perform_*` hook
+
 ## 0.7.0
 - Support usage of Resque version 3
 

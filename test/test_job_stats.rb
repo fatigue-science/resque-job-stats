@@ -43,6 +43,19 @@ class InstanceMethodJob < ActiveJob::Base
   end
 end
 
+class CountingJob < ActiveJob::Base
+  include Resque::Plugins::JobStats
+  queue_as :test
+
+  class << self
+    attr_accessor :runs
+  end
+
+  def perform
+    self.class.runs += 1
+  end
+end
+
 class TestResqueJobStats < MiniTest::Unit::TestCase
 
   def setup
@@ -150,7 +163,7 @@ class TestResqueJobStats < MiniTest::Unit::TestCase
   end
 
   def test_measured_jobs
-    assert_equal [SimpleJob, InstanceMethodJob], Resque::Plugins::JobStats.measured_jobs
+    assert_equal [SimpleJob, InstanceMethodJob, CountingJob], Resque::Plugins::JobStats.measured_jobs
   end
 
   def test_history
@@ -222,5 +235,13 @@ class TestResqueJobStats < MiniTest::Unit::TestCase
       @worker.work(0)
     end
     assert_equal 3, InstanceMethodJob.jobs_performed
+  end
+
+  def test_instance_method_jobs_perform_once
+    CountingJob.runs = 0
+    CountingJob.perform_now
+    assert_equal 1, CountingJob.runs
+    assert_equal 1, CountingJob.job_durations.count
+    assert_equal 1, CountingJob.job_histories.count
   end
 end
